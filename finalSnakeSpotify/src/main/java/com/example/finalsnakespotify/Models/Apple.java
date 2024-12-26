@@ -1,10 +1,10 @@
 package com.example.finalsnakespotify.Models;
 
+import javafx.application.Platform;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.paint.Color;
-import se.michaelthelin.spotify.model_objects.specification.Track;
 
 import java.awt.*;
 import java.util.Deque;
@@ -16,7 +16,6 @@ import javafx.scene.media.MediaPlayer;
 public class Apple {
     private int m_row;
     private int m_column;
-    private Random m_random;
 
     public Apple(int rows, int columns, Deque<Point> snake)
     {
@@ -33,9 +32,16 @@ public class Apple {
         }
     }
 
-    public void drawApple(GraphicsContext gc,String albumCoverURL) {
-        Image image = new Image(albumCoverURL);
-        gc.drawImage(image,m_row * Board.GetCellSize(), m_column*Board.GetCellSize(),Board.GetCellSize(),Board.GetCellSize());
+    public void drawApple(GraphicsContext gc,Image albumCover){
+        new Thread(() -> {
+            try {
+                Platform.runLater(() -> {
+                    gc.drawImage(albumCover, m_row * Board.GetCellSize(), m_column * Board.GetCellSize(), Board.GetCellSize(), Board.GetCellSize());
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 
     public boolean isEaten(int currRow, int currColumn){

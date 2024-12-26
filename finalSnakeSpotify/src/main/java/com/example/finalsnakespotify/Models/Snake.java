@@ -144,7 +144,6 @@ public class Snake {
                     Board.GetCellSize() - 1, Board.GetCellSize() - 1, 20, 20);
         }
 
-        // Draw the tail background color
         if ((tail.x + tail.y+2) % 2 == 0) {
             gc.setFill(javafx.scene.paint.Color.web("AAD751"));
         } else {

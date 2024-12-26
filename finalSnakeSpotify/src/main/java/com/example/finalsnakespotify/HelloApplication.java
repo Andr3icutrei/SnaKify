@@ -6,8 +6,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.stage.Stage;
-import org.apache.hc.core5.http.ParseException;
-import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
+
 
 import java.io.IOException;
 
@@ -16,6 +15,7 @@ public class HelloApplication extends Application {
     public void start(Stage stage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("welcomeScene.fxml"));
         Scene scene = new Scene(fxmlLoader.load());
+        scene.getStylesheets().add(getClass().getResource("styleButton.css").toExternalForm());
         stage.setTitle("Snake");
         stage.setResizable(false);
         stage.setScene(scene);
@@ -28,7 +28,6 @@ public class HelloApplication extends Application {
             }
         });
         stage.show();
-
     }
     public void logout(Stage stage) throws IOException {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -39,7 +38,7 @@ public class HelloApplication extends Application {
             stage.close();
         }
     }
-    public static void main(String[] args) throws IOException, ParseException, SpotifyWebApiException{
+    public static void main(String[] args) throws IOException{
         launch();
     }
 }

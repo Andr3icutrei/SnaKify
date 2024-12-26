@@ -1,18 +1,15 @@
 package com.example.finalsnakespotify.Models;
 
-import com.example.finalsnakespotify.snakeGameController;
-import com.example.finalsnakespotify.welcomeController;
-import com.sun.jdi.PrimitiveValue;
+import com.example.finalsnakespotify.Controllers.welcomeController;
 import javafx.animation.Timeline;
 import javafx.scene.canvas.GraphicsContext;
-import org.apache.hc.core5.http.ParseException;
-import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
-import se.michaelthelin.spotify.model_objects.specification.ArtistSimplified;
-
 import java.awt.*;
 import java.io.IOException;
 import java.util.Deque;
 import java.util.Iterator;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static com.example.finalsnakespotify.Models.Playlist.GetCurrentIndex;
 
 public class Game {
     private Board m_board;
@@ -25,23 +22,27 @@ public class Game {
 
     private String nowPlayingText;
 
-    public Game(GraphicsContext gc,String link) throws IOException, ParseException, SpotifyWebApiException {
+    public Game(GraphicsContext gc, String link, boolean fetchedSongsData) throws IOException {
         m_board = new Board(gc);
         m_snake=new Snake(Board.GetNumberOfRows(),Board.GetNumberOfColumns());
         m_apple=new Apple(Board.GetNumberOfRows(),Board.GetNumberOfColumns(),m_snake.GetSnakeBody());
 
-        m_playlist=new Playlist();
-        m_playlist.SetPlaylistID(m_playlist.findPlaylistId(link));
-        m_playlist.GetPlaylistForApple(m_playlist.GetPlaylistID());
+        m_playlist = new Playlist();
+        m_playlist.SetPlaylistURL(link);
+        if (fetchedSongsData==false) {
+            if (m_playlist.GetsongURLs().isEmpty()) {
+                m_playlist.fetchPlaylistData(m_playlist.GetPlaylistURL());
 
-        if(m_playlist==null)
-            return;
-        m_playlist.fetchAlbumCovers();
+                m_playlist.savePlaylistDataToJson();
+            }
+        }
+        else {
+            m_playlist.loadPlaylistDataFromJson();
+        }
         m_playlist.playNextSong(VOLUME);
 
         m_snake.drawSnake(gc);
-        m_apple.drawApple(gc,m_playlist.GetImagesURLs().get(m_playlist.GetCurrentIndex()));
-
+        m_apple.drawApple(gc,m_playlist.GetImages().get(m_playlist.GetsongURLs().get(GetCurrentIndex())));
     }
     public boolean gameOver() {
 
@@ -78,7 +79,7 @@ public class Game {
 
     public void drawApple(GraphicsContext gc){
         if(m_playlist!=null) {
-            m_apple.drawApple(gc, m_playlist.GetImagesURLs().get(m_playlist.GetCurrentIndex()));
+            m_apple.drawApple(gc, m_playlist.GetImages().get(m_playlist.GetsongURLs().get(GetCurrentIndex())));
         }
     }
 
@@ -91,6 +92,7 @@ public class Game {
         if(m_playlist!=null)
             m_playlist.stopPreviousSong();
     }
+
     public void deleteOldApple(GraphicsContext gc) {
         gc.clearRect(m_apple.GetRow()*m_board.GetCellSize(),m_apple.GetColumn()*m_board.GetCellSize(),
                 m_board.GetCellSize(),m_board.GetCellSize());
@@ -102,14 +104,11 @@ public class Game {
 
     ///getters+setters
     public String GetCurrentSongTitle() {
-        return m_playlist.GetTracks().get(m_playlist.GetCurrentIndex()).getName();
+        return m_playlist.GetSongNames().get(GetCurrentIndex());
     }
 
     public String GetCurrentSongArtist() {
-        String artistsString=new String();
-        for(ArtistSimplified artist: m_playlist.GetTracks().get(m_playlist.GetCurrentIndex()).getArtists())
-            artistsString+=artist.getName()+" ";
-        return artistsString;
+        return m_playlist.GetArtists().get(GetCurrentIndex());
     }
     public Board GetBoard(){
         return m_board;

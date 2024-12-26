@@ -22,7 +22,7 @@ import java.util.Iterator;
 public class Board {
 
     private static final int m_width=600;
-    private static final int m_height=700;
+    private static final int m_height=900;
     private static final int m_numberOfRows=13;
     private static final int m_numberOfColumns=13;
     private static final int m_cellSize=m_width/m_numberOfRows;
