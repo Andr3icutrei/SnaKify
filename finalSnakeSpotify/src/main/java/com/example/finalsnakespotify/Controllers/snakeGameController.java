@@ -89,7 +89,7 @@ public class snakeGameController {
         game.drawSnake(gc);
         game.moveSnake();
 
-        if(game.eatFood())
+        if(game.eatFood(game.GetCurrentSongImage()))
         {
             game.stopPreviousSong();
             game.GetPlaylist().playNextSong(VOLUME);
@@ -103,6 +103,7 @@ public class snakeGameController {
     public void clearCanvas() {
         gc.clearRect(0, 0, Board.GetWidth(), Board.GetHeight());
     }
+
     public Canvas GetRegularGameCanvas() {
         return regularGameCanvas;
     }

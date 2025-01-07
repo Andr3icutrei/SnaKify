@@ -21,15 +21,12 @@ public class PlaylistData {
         return artistNames;
     }
 
-    public PlaylistData setArtistNames(List<String> artistNames) {
+    public void setArtistNames(List<String> artistNames) {
         this.artistNames = artistNames;
-        return this;
     }
 
     @JsonProperty("artist_names")
     private List<String> artistNames;
-
-    // Getters and Setters
 
     public String getPlaylistUrl() {
         return playlistUrl;

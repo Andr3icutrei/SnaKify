@@ -1,8 +1,8 @@
 package com.example.finalsnakespotify.Models;
 
+import com.example.finalsnakespotify.Interfaces.IPlaylist;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import javafx.scene.control.Alert;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.media.Media;
@@ -19,12 +19,11 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Playlist {
+public class Playlist implements IPlaylist {
     private static final String JAMENDO_API_URL = "https://api.jamendo.com/v3.0/";
     private static final String CLIENT_ID = "1d442a0a";
 
     private static int m_index = 0;
-    private static Media media;
     private static MediaPlayer mediaPlayer;
 
     private String m_playlistID;
@@ -50,15 +49,16 @@ public class Playlist {
         this.m_images = new HashMap<>();
     }
 
+    @Override
     public void clearPlaylistDataJson() throws IOException {
         ObjectMapper objectMapper=new ObjectMapper();
         File file =new File(CURRENT_PLAYLISTDATA_PATH);
         if(file.exists()) {
             objectMapper.writeValue(file, new PlaylistData());
-            System.out.println("Playlist data cleared from JSON file.");
         }
     }
 
+    @Override
     public void savePlaylistDataToJson() throws IOException {
         clearPlaylistDataJson();
         ObjectMapper objectMapper = new ObjectMapper();
@@ -71,9 +71,9 @@ public class Playlist {
         playlistData.setArtistNames(this.GetArtists());
 
         objectMapper.writeValue(new File(CURRENT_PLAYLISTDATA_PATH), playlistData);
-        System.out.println("Playlist data saved to: " );
     }
 
+    @Override
     public void loadPlaylistDataFromJson() throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
 
@@ -98,7 +98,8 @@ public class Playlist {
         loadImagesFromJson();
     }
 
-    private void loadImagesFromJson() throws IOException {
+    @Override
+    public void loadImagesFromJson() throws IOException {
         for(int i=0;i<m_songURLs.size();++i) {
             Image originalImage = new Image(m_ImageURLs.get(i));
 
@@ -111,6 +112,7 @@ public class Playlist {
         }
     }
 
+    @Override
     public void fetchPlaylistData(String playlistUrl) throws IOException {
         String playlistId = extractPlaylistIdFromUrl(playlistUrl);
         if (playlistId == null) {
@@ -183,6 +185,7 @@ public class Playlist {
         System.out.println("Total songs fetched: " + m_songURLs.size());
     }
 
+    @Override
     public boolean playCurrentTrack(double VOLUME) {
         if (m_index < 0 || m_index >= m_songURLs.size()) {
             return false;
@@ -190,7 +193,7 @@ public class Playlist {
 
         String audioUrl = m_songURLs.get(m_index);
         if (audioUrl != null) {
-            media = new Media(audioUrl);
+            Media media = new Media(audioUrl);
             mediaPlayer = new MediaPlayer(media);
             mediaPlayer.setAutoPlay(true);
             mediaPlayer.setCycleCount(1);
@@ -211,22 +214,24 @@ public class Playlist {
         }
     }
 
+    @Override
     public void stopPreviousSong() {
         if (mediaPlayer != null) {
             mediaPlayer.stop();
         }
     }
 
+    @Override
     public void increaseIndex() {
         if (m_songURLs.size() != 0) {
             m_index = ThreadLocalRandom.current().nextInt(0, 1000) % m_songURLs.size();
         }
     }
 
+    @Override
     public void playNextSong(double VOLUME) {
         do {
             increaseIndex();
-            System.out.println(m_index);
         } while (!playCurrentTrack(VOLUME));
     }
 
@@ -267,7 +272,6 @@ public class Playlist {
         }
     }
 
-
     public static String extractPlaylistIdFromUrl(String url) {
         String regex = "\\d{9}";
         Pattern pattern = Pattern.compile(regex);
@@ -280,31 +284,42 @@ public class Playlist {
             return null;
         }
     }
-    public List<String> GetImagesURLs() {
-        return m_ImageURLs;
-    }
-    public List<String> GetsongURLs() {
-        return m_songURLs;
-    }
-    public void SetsongURLs(List<String> songURLs) {
-        m_songURLs = songURLs;
-    }
-    public String GetCurrentTrackUrl() {
-        return m_songURLs.get(m_index);
-    }
+
+    @Override
     public void changeVolume(double volume){
         if(mediaPlayer!=null)
             mediaPlayer.setVolume(volume/100.0);
     }
+
+    @Override
+    public List<String> GetImagesURLs() {
+        return m_ImageURLs;
+    }
+    @Override
+    public List<String> GetsongURLs() {
+        return m_songURLs;
+    }
+    @Override
+    public void SetsongURLs(List<String> songURLs) {
+        m_songURLs = songURLs;
+    }
+    @Override
+    public String GetCurrentTrackUrl() {
+        return m_songURLs.get(m_index);
+    }
+    @Override
     public String GetPlaylistID() {
         return m_playlistID;
     }
+    @Override
     public void SetPlaylistID(String playlistID) {
         m_playlistID= playlistID;
     }
+    @Override
     public String GetPlaylistURL() {
         return m_playlistURL;
     }
+    @Override
     public void SetPlaylistURL(String playlistURL) {
         m_playlistURL = playlistURL;
     }
@@ -314,30 +329,38 @@ public class Playlist {
     public static void SetCurrentIndex(int index){
         m_index = index;
     }
+    @Override
     public void SetSongNames(List<String> songNames) {
         m_songNames = songNames;
     }
+    @Override
     public void SetArtists(List<String> artists) {
         m_artists = artists;
     }
+    @Override
     public List<String> GetSongNames(){
         return m_songNames;
     }
+    @Override
     public List<String> GetArtists(){
         return m_artists;
     }
     public static MediaPlayer GetMediaPlayer() {
         return mediaPlayer;
     }
+    @Override
     public void SetImages(HashMap<String,Image> images) {
         m_images = images;
     }
+    @Override
     public HashMap<String,Image> GetImages() {
         return m_images;
     }
+    @Override
     public void SetImageURLs(List<String>listImages){
         m_ImageURLs = listImages;
     }
+    @Override
     public List<String> GetImageURLs(){
         return m_ImageURLs;
     }
