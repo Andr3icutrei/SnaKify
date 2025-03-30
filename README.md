@@ -9,7 +9,7 @@ The technologies used in order to code this desktop app are JavaFX, Jamendo REST
 
 - when the given url is valid, a new scene is open and a Snake game starts 
 
-- a track from the inserted playlist is played until the "apple" (currnet album cover of a song) is "eaten" by the snake and a new track is played
+- a track from the inserted playlist is played until the "apple" (current album cover of a song) is "eaten" by the snake and a new track is played
 
 - eaten songs are added to the tail of the snake
 
