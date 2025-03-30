@@ -1,6 +1,7 @@
 # Snakify
 
 Recreation of the snake game included in Spotify iOS app using music streaming platform Jamendo. 
+The technologies used in order to code this desktop app are JavaFX, Jamendo REST API and CSS.
 
 Instructions of use:
 
