@@ -15,6 +15,4 @@ module com.example.finalsnakespotify {
     opens com.example.finalsnakespotify.Models to javafx.fxml;
     exports com.example.finalsnakespotify.Controllers;
     opens com.example.finalsnakespotify.Controllers to javafx.fxml;
-    exports com.example.finalsnakespotify.Interfaces;
-    opens com.example.finalsnakespotify.Interfaces to javafx.fxml;
 }

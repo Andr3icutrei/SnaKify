@@ -16,7 +16,7 @@ public class HelloApplication extends Application {
         FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("welcomeScene.fxml"));
         Scene scene = new Scene(fxmlLoader.load());
         scene.getStylesheets().add(getClass().getResource("styleButton.css").toExternalForm());
-        stage.setTitle("Snake");
+        stage.setTitle("SnaKify");
         stage.setResizable(false);
         stage.setScene(scene);
         stage.setOnCloseRequest(event -> {

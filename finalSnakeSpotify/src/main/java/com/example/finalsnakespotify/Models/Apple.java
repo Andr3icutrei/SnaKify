@@ -1,6 +1,5 @@
 package com.example.finalsnakespotify.Models;
 
-import com.example.finalsnakespotify.Interfaces.IApple;
 import javafx.application.Platform;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
@@ -14,7 +13,7 @@ import java.util.Random;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 
-public class Apple implements IApple {
+public class Apple {
     private int m_row;
     private int m_column;
 
@@ -38,41 +37,20 @@ public class Apple implements IApple {
         }
     }
 
-    @Override
-    public void drawApple(GraphicsContext gc,Image albumCover){
-        new Thread(() -> {
-            try {
-                Platform.runLater(() -> {
-                    gc.drawImage(albumCover, m_row * Board.GetCellSize(), m_column * Board.GetCellSize(), Board.GetCellSize(), Board.GetCellSize());
-                });
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }).start();
-    }
-
-    @Override
     public boolean isEaten(int currRow, int currColumn){
         return currRow==m_row && currColumn==m_column;
     }
 
-    @Override
-    public int GetRow() {
+    public int getRow() {
         return m_row;
     }
-
-    @Override
-    public void SetRow(int row) {
+    public void setRow(int row) {
         this.m_row = row;
     }
-
-    @Override
-    public int GetColumn() {
+    public int getColumn() {
         return m_column;
     }
-
-    @Override
-    public void SetColumn(int column) {
+    public void setColumn(int column) {
         this.m_column = column;
     }
 }

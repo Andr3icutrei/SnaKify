@@ -12,14 +12,14 @@ import static org.junit.jupiter.api.Assertions.*;
 class PlaylistTest {
 
     @Test
-    void isPlaylistLinkValid() {
+    void isPlaylistLinkValid() throws IOException {
         String validUrl="https://www.jamendo.com/playlist/500608900/indie";
         Playlist playlist=new Playlist();
         assertEquals(true,Playlist.isPlaylistLinkValid(validUrl));
     }
 
     @Test
-    void extractPlaylistIdFromUrl() {
+    void extractPlaylistIdFromUrl() throws IOException {
         String validUrl="https://www.jamendo.com/playlist/500608900/indie";
         Playlist playlist=new Playlist();
         assertEquals("500608900",playlist.extractPlaylistIdFromUrl(validUrl));

@@ -1,6 +1,5 @@
 package com.example.finalsnakespotify.Models;
 
-import com.example.finalsnakespotify.Interfaces.IPlaylist;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.scene.image.Image;
@@ -12,16 +11,28 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Playlist implements IPlaylist {
+public class Playlist {
     private static final String JAMENDO_API_URL = "https://api.jamendo.com/v3.0/";
-    private static final String CLIENT_ID = "1d442a0a";
+    private static final String CLIENT_ID;
+    static {
+        try {
+            CLIENT_ID = GetApiKey();
+            System.out.println(CLIENT_ID);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     private static int m_index = 0;
     private static MediaPlayer mediaPlayer;
@@ -39,7 +50,7 @@ public class Playlist implements IPlaylist {
     private final OkHttpClient httpClient;
     private final ObjectMapper objectMapper;
 
-    public Playlist() {
+    public Playlist() throws IOException {
         this.httpClient = new OkHttpClient();
         this.objectMapper = new ObjectMapper();
         this.m_songURLs = new ArrayList<>();
@@ -49,7 +60,18 @@ public class Playlist implements IPlaylist {
         this.m_images = new HashMap<>();
     }
 
-    @Override
+    private static String GetApiKey() throws IOException {
+        Properties properties = new Properties();
+
+        try (InputStream input = Playlist.class.getClassLoader().getResourceAsStream("config.properties")) {
+            if (input == null) {
+                throw new IOException("Config file not found");
+            }
+            properties.load(input);
+            return properties.getProperty("api.key");
+        }
+    }
+
     public void clearPlaylistDataJson() throws IOException {
         ObjectMapper objectMapper=new ObjectMapper();
         File file =new File(CURRENT_PLAYLISTDATA_PATH);
@@ -58,22 +80,20 @@ public class Playlist implements IPlaylist {
         }
     }
 
-    @Override
     public void savePlaylistDataToJson() throws IOException {
         clearPlaylistDataJson();
         ObjectMapper objectMapper = new ObjectMapper();
         PlaylistData playlistData = new PlaylistData();
 
-        playlistData.setPlaylistUrl(this.GetPlaylistURL());
-        playlistData.setSongUrls(this.GetsongURLs());
-        playlistData.setSongNames(this.GetSongNames());
-        playlistData.setAlbumCoverUrls(this.GetImageURLs());
-        playlistData.setArtistNames(this.GetArtists());
+        playlistData.setPlaylistUrl(this.getPlaylistURL());
+        playlistData.setSongUrls(this.getsongURLs());
+        playlistData.setSongNames(this.getSongNames());
+        playlistData.setAlbumCoverUrls(this.getImageURLs());
+        playlistData.setArtistNames(this.getArtists());
 
         objectMapper.writeValue(new File(CURRENT_PLAYLISTDATA_PATH), playlistData);
     }
 
-    @Override
     public void loadPlaylistDataFromJson() throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
 
@@ -83,11 +103,11 @@ public class Playlist implements IPlaylist {
             try {
                 PlaylistData playlistData = objectMapper.readValue(file, PlaylistData.class);
 
-                this.SetPlaylistURL(playlistData.getPlaylistUrl());
-                this.SetsongURLs(playlistData.getSongUrls());
-                this.SetSongNames(playlistData.getSongNames());
-                this.SetImageURLs(playlistData.getAlbumCoverUrls());
-                this.SetArtists(playlistData.getArtistNames());
+                this.setPlaylistURL(playlistData.getPlaylistUrl());
+                this.setsongURLs(playlistData.getSongUrls());
+                this.setSongNames(playlistData.getSongNames());
+                this.setImageURLs(playlistData.getAlbumCoverUrls());
+                this.setArtists(playlistData.getArtistNames());
                 System.out.println("Playlist data loaded from: " + CURRENT_PLAYLISTDATA_PATH);
             } catch (Exception e) {
                 System.out.println("Error reading playlist data: " + e.getMessage());
@@ -98,21 +118,19 @@ public class Playlist implements IPlaylist {
         loadImagesFromJson();
     }
 
-    @Override
     public void loadImagesFromJson() throws IOException {
         for(int i=0;i<m_songURLs.size();++i) {
             Image originalImage = new Image(m_ImageURLs.get(i));
 
             ImageView imageView = new ImageView(originalImage);
-            imageView.setFitWidth(Board.GetCellSize());
-            imageView.setFitHeight(Board.GetCellSize());
+            imageView.setFitWidth(Board.getCellSize());
+            imageView.setFitHeight(Board.getCellSize());
             imageView.setPreserveRatio(true);
 
             m_images.put(m_songURLs.get(i), imageView.getImage());
         }
     }
 
-    @Override
     public void fetchPlaylistData(String playlistUrl) throws IOException {
         String playlistId = extractPlaylistIdFromUrl(playlistUrl);
         if (playlistId == null) {
@@ -163,8 +181,8 @@ public class Playlist implements IPlaylist {
                             Image originalImage = new Image(albumCoverUrl);
 
                             ImageView imageView = new ImageView(originalImage);
-                            imageView.setFitWidth(Board.GetCellSize());
-                            imageView.setFitHeight(Board.GetCellSize());
+                            imageView.setFitWidth(Board.getCellSize());
+                            imageView.setFitHeight(Board.getCellSize());
                             imageView.setPreserveRatio(true);
 
                             m_images.put(songUrl, imageView.getImage());
@@ -185,7 +203,6 @@ public class Playlist implements IPlaylist {
         System.out.println("Total songs fetched: " + m_songURLs.size());
     }
 
-    @Override
     public boolean playCurrentTrack(double VOLUME) {
         if (m_index < 0 || m_index >= m_songURLs.size()) {
             return false;
@@ -214,21 +231,18 @@ public class Playlist implements IPlaylist {
         }
     }
 
-    @Override
     public void stopPreviousSong() {
         if (mediaPlayer != null) {
             mediaPlayer.stop();
         }
     }
 
-    @Override
     public void increaseIndex() {
         if (m_songURLs.size() != 0) {
             m_index = ThreadLocalRandom.current().nextInt(0, 1000) % m_songURLs.size();
         }
     }
 
-    @Override
     public void playNextSong(double VOLUME) {
         do {
             increaseIndex();
@@ -241,7 +255,6 @@ public class Playlist implements IPlaylist {
             System.out.println("Invalid playlist URL format.");
             return false;
         }
-
         OkHttpClient client = new OkHttpClient();
         String apiUrl = JAMENDO_API_URL + "playlists?client_id=" + CLIENT_ID + "&id=" + playlistId;
 
@@ -285,83 +298,66 @@ public class Playlist implements IPlaylist {
         }
     }
 
-    @Override
     public void changeVolume(double volume){
         if(mediaPlayer!=null)
             mediaPlayer.setVolume(volume/100.0);
     }
 
-    @Override
-    public List<String> GetImagesURLs() {
+    public List<String> getImagesURLs() {
         return m_ImageURLs;
     }
-    @Override
-    public List<String> GetsongURLs() {
+    public List<String> getsongURLs() {
         return m_songURLs;
     }
-    @Override
-    public void SetsongURLs(List<String> songURLs) {
+    public void setsongURLs(List<String> songURLs) {
         m_songURLs = songURLs;
     }
-    @Override
-    public String GetCurrentTrackUrl() {
+    public String getCurrentTrackUrl() {
         return m_songURLs.get(m_index);
     }
-    @Override
-    public String GetPlaylistID() {
+    public String getPlaylistID() {
         return m_playlistID;
     }
-    @Override
-    public void SetPlaylistID(String playlistID) {
+    public void setPlaylistID(String playlistID) {
         m_playlistID= playlistID;
     }
-    @Override
-    public String GetPlaylistURL() {
+    public String getPlaylistURL() {
         return m_playlistURL;
     }
-    @Override
-    public void SetPlaylistURL(String playlistURL) {
+    public void setPlaylistURL(String playlistURL) {
         m_playlistURL = playlistURL;
     }
-    public static int GetCurrentIndex(){
+    public static int getCurrentIndex(){
         return m_index;
     }
-    public static void SetCurrentIndex(int index){
+    public static void setCurrentIndex(int index){
         m_index = index;
     }
-    @Override
-    public void SetSongNames(List<String> songNames) {
+    public void setSongNames(List<String> songNames) {
         m_songNames = songNames;
     }
-    @Override
-    public void SetArtists(List<String> artists) {
+    public void setArtists(List<String> artists) {
         m_artists = artists;
     }
-    @Override
-    public List<String> GetSongNames(){
+    public List<String> getSongNames(){
         return m_songNames;
     }
-    @Override
-    public List<String> GetArtists(){
+    public List<String> getArtists(){
         return m_artists;
     }
-    public static MediaPlayer GetMediaPlayer() {
+    public static MediaPlayer getMediaPlayer() {
         return mediaPlayer;
     }
-    @Override
-    public void SetImages(HashMap<String,Image> images) {
+    public void setImages(HashMap<String,Image> images) {
         m_images = images;
     }
-    @Override
-    public HashMap<String,Image> GetImages() {
+    public HashMap<String,Image> getImages() {
         return m_images;
     }
-    @Override
-    public void SetImageURLs(List<String>listImages){
+    public void setImageURLs(List<String>listImages){
         m_ImageURLs = listImages;
     }
-    @Override
-    public List<String> GetImageURLs(){
+    public List<String> getImageURLs(){
         return m_ImageURLs;
     }
 }

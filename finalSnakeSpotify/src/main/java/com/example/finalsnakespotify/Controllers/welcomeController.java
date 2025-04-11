@@ -35,13 +35,10 @@ public class welcomeController {
     public final static int frameDuration=210;
     public static double VOLUME=50.0;
 
-    private Game game;
     private Scene scene;
     private snakeGameController controller;
     private Stage stage;
     private FXMLLoader fxmlLoader;
-
-    private AtomicBoolean fetchedSongsData=new AtomicBoolean(false);
 
     public void setKeybinds()
     {
@@ -49,8 +46,9 @@ public class welcomeController {
             @Override
             public void handle(KeyEvent event) {
                 KeyCode code = event.getCode();
+                Game game = controller.getCurrentGame();
                 if(code==KeyCode.R) {
-                    if(game.gameOver()==true){
+                    if(game.gameOver()==true || controller.secondsLeft<=0){
                         try {
                             restartGame(controller);
                         } catch (IOException e) {
@@ -59,20 +57,20 @@ public class welcomeController {
                     }
                 }
                 if (code == KeyCode.RIGHT || code == KeyCode.D) {
-                    if (game.GetSnake().GetCurrentDirection() != Snake.direction.LEFT) {
-                        game.SetSnakeDirection(Snake.direction.RIGHT);
+                    if (game.getSnake().getCurrentDirection() != Snake.direction.LEFT) {
+                        game.setSnakeDirection(Snake.direction.RIGHT);
                     }
                 } else if (code == KeyCode.LEFT || code == KeyCode.A) {
-                    if (game.GetSnake().GetCurrentDirection() != Snake.direction.RIGHT) {
-                        game.SetSnakeDirection(Snake.direction.LEFT);
+                    if (game.getSnake().getCurrentDirection() != Snake.direction.RIGHT) {
+                        game.setSnakeDirection(Snake.direction.LEFT);
                     }
                 } else if (code == KeyCode.UP || code == KeyCode.W) {
-                    if (game.GetSnake().GetCurrentDirection() != Snake.direction.DOWN) {
-                        game.SetSnakeDirection(Snake.direction.UP);
+                    if (game.getSnake().getCurrentDirection() != Snake.direction.DOWN) {
+                        game.setSnakeDirection(Snake.direction.UP);
                     }
                 } else if (code == KeyCode.DOWN || code == KeyCode.S) {
-                    if (game.GetSnake().GetCurrentDirection() != Snake.direction.UP) {
-                        game.SetSnakeDirection(Snake.direction.DOWN);
+                    if (game.getSnake().getCurrentDirection() != Snake.direction.UP) {
+                        game.setSnakeDirection(Snake.direction.DOWN);
                     }
                 }
             }
@@ -87,7 +85,7 @@ public class welcomeController {
 
         setKeybinds();
 
-        timeline = new Timeline(new KeyFrame(Duration.millis(frameDuration), e -> controller.runGame(game,timeline,VOLUME)));
+        timeline = new Timeline(new KeyFrame(Duration.millis(frameDuration), e -> controller.runGame(timeline,VOLUME)));
         timeline.setCycleCount(Animation.INDEFINITE);
 
         timeline.play();
@@ -128,17 +126,25 @@ public class welcomeController {
 
         volumeSlider.setValue(VOLUME);
 
-        game=controller.initialize(link);
+        controller.initialize(link);
+        controller.drawBackground();
+        controller.drawSnake();
+        controller.drawApple();
 
         runSnakeGame(event,link);
     }
 
     public void restartGame(snakeGameController controller) throws IOException{
         timeline.stop();
-        game.GetPlaylist().stopPreviousSong();
+        controller.getCurrentGame().getPlaylist().stopPreviousSong();
         controller.clearCanvas();
-        game = new Game(controller.GetGraphicsContext(),playlistLinkTextField.getText(),true);
-        timeline = new Timeline(new KeyFrame(Duration.millis(frameDuration), e -> controller.runGame(game,timeline,VOLUME)));
+        controller.setCurrentGame(new Game(playlistLinkTextField.getText(),true));
+
+        controller.drawBackground();
+        controller.drawSnake();
+        controller.drawApple();
+
+        timeline = new Timeline(new KeyFrame(Duration.millis(frameDuration), e -> controller.runGame(timeline,VOLUME)));
         timeline.setCycleCount(Animation.INDEFINITE);
         timeline.play();
     }
